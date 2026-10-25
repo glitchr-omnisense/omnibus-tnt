@@ -129,6 +129,9 @@ local times without an offset), with TNT's status code as `code` and the depot (
 consignment's `SummaryCode` is `DEL`. An event's status is read from its code, else from words of
 its description, in this order:
 
+> [!WARNING]
+> Known defect: tracking always sends origin country `FR` and market type `INTERNATIONAL`, where they should follow the parcel.
+
 | Code | Or the description contains | `TrackingStatus` |
 |---|---|---|
 | `OK` | `delivered` | `DELIVERED` |
