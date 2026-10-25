@@ -45,6 +45,9 @@ final class Api
             throw new CarrierException('tnt', sprintf('TNT answered HTTP %d.', $status));
         }
         $parsed = @simplexml_load_string(trim($content));
+        if (false !== $parsed && 'html' === strtolower($parsed->getName())) { // a proxy's or gateway's error page is no answer
+            throw new CarrierException('tnt', 'TNT answered with a page, not XML.');
+        }
         if (false === $parsed) {
             // Shipping answers an access code first, as plain text; the result is fetched with it.
             if (preg_match('/^[A-Za-z0-9]{6,32}$/', trim($content))) {

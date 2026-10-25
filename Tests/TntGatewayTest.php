@@ -5,7 +5,7 @@ namespace Omnibus\Tnt\Tests;
 use Omnibus\Model\TrackingStatus;
 use Omnibus\Request\Cancel;
 use Omnibus\Request\Pickup;
-use Omnibus\Tests\Fixtures;
+use Omnibus\Testing\Fixtures;
 use Omnibus\Tnt\TntGatewayFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
