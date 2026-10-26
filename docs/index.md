@@ -1,9 +1,9 @@
 # omnibus/tnt
 
-TNT for [omniscient/omnibus](https://github.com/glitchr-studio/omnibus): prices, consignments with
+TNT for [omnisense/omnibus](https://github.com/glitchr-omnisense/omnibus): prices, consignments with
 their labels, and tracking, through TNT's ExpressConnect XML services on `express.tnt.com`. Since
 TNT joined FedEx, ExpressConnect still answers existing TNT accounts; new accounts get FedEx's
-APIs instead ([omnibus/fedex](https://github.com/glitchr-studio/omnibus-fedex)). The gateway
+APIs instead ([omnibus/fedex](https://github.com/glitchr-omnisense/omnibus-fedex)). The gateway
 calls:
 
 | Operation | ExpressConnect service | Address |
@@ -21,7 +21,7 @@ no sandbox: a test account is one TNT marks as such.
 composer require omnibus/tnt
 ```
 
-Requires PHP 8.2, `omniscient/omnibus` (2.x) and `symfony/http-client` (6.4, 7 or 8); given no
+Requires PHP 8.2, `omnisense/omnibus` (2.x) and `symfony/http-client` (6.4, 7 or 8); given no
 HTTP client, the factory makes one with `HttpClient::create()`. In a Symfony application with
 `Omnibus\Bridge\Symfony\OmnibusBundle`, the factory is registered as soon as the package is
 installed.
@@ -41,7 +41,7 @@ document (`<LOGIN><COMPANY>` and `<PASSWORD>`).
 | `username` | string | - | yes | the ExpressConnect login |
 | `password` | string | - | yes | its password |
 | `account_number` | string | - | yes | the TNT account |
-| `rates` | list | - | no | prices from configuration instead of ExpressConnect Pricing ([the rates option](https://github.com/glitchr-studio/omnibus/blob/2.x/docs/configuration.md#the-rates-option)): with it, Pricing is not called |
+| `rates` | list | - | no | prices from configuration instead of ExpressConnect Pricing ([the rates option](https://github.com/glitchr-omnisense/omnibus/blob/2.x/docs/configuration.md#the-rates-option)): with it, Pricing is not called |
 
 The factory's docblock also lists a `sender` option (a collection address other than the
 shipment's sender), which no code reads: the collection address is always the shipment's
