@@ -3,6 +3,7 @@
 namespace Omnibus\Tnt;
 
 use Omnibus\Exception\CarrierException;
+use Omnibus\Http\Redaction;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -39,25 +40,27 @@ final class Api
             $status = $response->getStatusCode();
             $content = $response->getContent(false);
         } catch (HttpExceptionInterface $e) {
-            throw new CarrierException('tnt', 'TNT request failed: '.$e->getMessage(), null, $e);
+            $secrets = $this->secrets();
+
+            throw Redaction::withoutArguments(new CarrierException('tnt', 'TNT request failed: '.Redaction::text($e->getMessage(), $secrets), null, Redaction::copy($e, $secrets)));
         }
         if ($status >= 400) {
-            throw new CarrierException('tnt', sprintf('TNT answered HTTP %d.', $status));
+            throw Redaction::withoutArguments(new CarrierException('tnt', sprintf('TNT answered HTTP %d.', $status)));
         }
         $parsed = @simplexml_load_string(trim($content));
         if (false !== $parsed && 'html' === strtolower($parsed->getName())) { // a proxy's or gateway's error page is no answer
-            throw new CarrierException('tnt', 'TNT answered with a page, not XML.');
+            throw Redaction::withoutArguments(new CarrierException('tnt', 'TNT answered with a page, not XML.'));
         }
         if (false === $parsed) {
             // Shipping answers an access code first, as plain text; the result is fetched with it.
             if (preg_match('/^[A-Za-z0-9]{6,32}$/', trim($content))) {
                 return new \SimpleXMLElement('<accessCode>'.trim($content).'</accessCode>');
             }
-            throw new CarrierException('tnt', 'TNT answered with a body that is not XML.');
+            throw Redaction::withoutArguments(new CarrierException('tnt', 'TNT answered with a body that is not XML.'));
         }
         foreach ([$parsed->errors->brokenRule ?? [], $parsed->ERROR ?? []] as $errors) {
             foreach ($errors as $error) {
-                throw new CarrierException('tnt', (string) ($error->description ?? $error->DESCRIPTION ?? $error), (string) ($error->code ?? $error->CODE ?? '') ?: null);
+                throw Redaction::withoutArguments(new CarrierException('tnt', (string) ($error->description ?? $error->DESCRIPTION ?? $error), (string) ($error->code ?? $error->CODE ?? '') ?: null));
             }
         }
 
@@ -67,5 +70,15 @@ final class Api
     public static function e(string $s): string
     {
         return htmlspecialchars($s, \ENT_XML1 | \ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * What a failure must not carry: the credentials, and what a request made of them.
+     *
+     * @return list<string>
+     */
+    private function secrets(string ...$more): array
+    {
+        return [$this->password, ...$more];
     }
 }
