@@ -41,11 +41,13 @@ document (`<LOGIN><COMPANY>` and `<PASSWORD>`).
 | `username` | string | - | yes | the ExpressConnect login |
 | `password` | string | - | yes | its password |
 | `account_number` | string | - | yes | the TNT account |
+| `sender` | ?array | `null` | no | the account's collection address, when it is not the shipment's sender (below) |
 | `rates` | list | - | no | prices from configuration instead of ExpressConnect Pricing ([the rates option](https://github.com/glitchr-omnisense/omnibus/blob/2.x/docs/configuration.md#the-rates-option)): with it, Pricing is not called |
 
-The factory's docblock also lists a `sender` option (a collection address other than the
-shipment's sender), which no code reads: the collection address is always the shipment's
-`sender`.
+The `sender` option is the account's collection address when it is not the shipment's sender:
+an `Address`, or its fields (`name`, `street` a list or one line, `postcode`, `city`, `country`,
+optionally `company`, `phone`, `email`); a missing field is an `InvalidConfigException` when the
+gateway is built.
 
 Shipment options (`Shipment::$options`):
 
@@ -99,7 +101,8 @@ cheapest first.
 **Ship.** In three posts. The first is the consignment document (`ESHIPPER`, application `EC`
 3.1):
 
-- the sender, with the account and `sender_vat`, is also the collection address; the ship date is
+- the sender, with the account and `sender_vat`; the collection address is the `sender` option,
+  else the shipment's sender; the ship date is
   `Shipment::$shippingDate` (else tomorrow) as `dd/mm/yyyy`, the preferred collection window
   10:00 to 16:00;
 - each party is its company (else name), two street lines, city (30 characters each), postcode,

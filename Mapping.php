@@ -10,7 +10,7 @@ final class Mapping
 {
     public const SERVICES = ['15N' => 'Express', '09N' => '9:00 Express', '10N' => '10:00 Express', '12N' => '12:00 Express', '48N' => 'Economy Express', '15D' => 'Express Documents', '12D' => '12:00 Express Documents'];
 
-    public static function address(Address $a, bool $upper = true): string
+    public static function address(Address $a): string
     {
         return '<COMPANYNAME>'.Api::e(mb_substr($a->company ?? $a->name, 0, 30)).'</COMPANYNAME>'
             .'<STREETADDRESS1>'.Api::e(mb_substr($a->line(0), 0, 30)).'</STREETADDRESS1>'

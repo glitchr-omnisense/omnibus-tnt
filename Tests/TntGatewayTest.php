@@ -15,7 +15,7 @@ final class TntGatewayTest extends TestCase
 {
     private array $calls = [];
 
-    private function gateway(): \Omnibus\GatewayInterface
+    private function gateway(array $options = []): \Omnibus\GatewayInterface
     {
         $http = new MockHttpClient(function (string $method, string $url, array $options): MockResponse {
             $body = (string) $options['body'];
@@ -31,7 +31,7 @@ final class TntGatewayTest extends TestCase
             };
         });
 
-        return (new TntGatewayFactory($http))->create(['username' => 'user', 'password' => 'pass', 'account_number' => '000123456']);
+        return (new TntGatewayFactory($http))->create(['username' => 'user', 'password' => 'pass', 'account_number' => '000123456'] + $options);
     }
 
     public function testPricesComeCheapestFirst(): void
@@ -68,5 +68,21 @@ final class TntGatewayTest extends TestCase
         self::assertStringNotContainsString('marketType', $this->calls[0][1]);
         self::assertFalse($gateway->supports(Pickup::class));
         self::assertFalse($gateway->supports(Cancel::class));
+    }
+
+    /** The factory's "sender" option is the account's collection address (ExpressConnect's COLLECTIONADDRESS); the SENDER stays the shipment's sender. */
+    public function testTheSenderOptionIsTheCollectionAddress(): void
+    {
+        $this->gateway(['sender' => ['name' => 'Entrepôt Nord', 'street' => ['5 rue du Port'], 'postcode' => '59000', 'city' => 'Lille', 'country' => 'FR']])->ship(Fixtures::shipment());
+        self::assertMatchesRegularExpression('#<COLLECTIONADDRESS><COMPANYNAME>Entrepôt Nord</COMPANYNAME><STREETADDRESS1>5 rue du Port</STREETADDRESS1><CITY>Lille</CITY><POSTCODE>59000</POSTCODE>#u', $this->calls[0][1]);
+        self::assertStringNotContainsString('<SENDER><COMPANYNAME>Entrepôt Nord', $this->calls[0][1]);
+
+        $this->calls = [];
+        $this->gateway()->ship(Fixtures::shipment());
+        $sender = Fixtures::shipment()->sender;
+        self::assertStringContainsString('<COLLECTIONADDRESS><COMPANYNAME>'.($sender->company ?? $sender->name).'</COMPANYNAME>', $this->calls[0][1], 'without it: the shipment\'s sender');
+
+        $this->expectException(\Omnibus\Exception\InvalidConfigException::class);
+        $this->gateway(['sender' => ['name' => 'Entrepôt Nord']]);
     }
 }

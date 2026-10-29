@@ -6,6 +6,7 @@ use Omnibus\Action\ActionInterface;
 use Omnibus\Action\ApiAwareInterface;
 use Omnibus\Action\ApiAwareTrait;
 use Omnibus\Exception\CarrierException;
+use Omnibus\Model\Address;
 use Omnibus\Model\Label;
 use Omnibus\Request\Request;
 use Omnibus\Request\Shipping;
@@ -22,7 +23,8 @@ final class ShippingAction implements ActionInterface, ApiAwareInterface
     /** @use ApiAwareTrait<Api> */
     use ApiAwareTrait;
 
-    public function __construct()
+    /** @param ?Address $collection the account's collection address, when it is not the shipment's sender (option "sender") */
+    public function __construct(private readonly ?Address $collection = null)
     {
         $this->apiClass = Api::class;
     }
@@ -44,7 +46,7 @@ final class ShippingAction implements ActionInterface, ApiAwareInterface
         $international = strtoupper($s->sender->country) !== strtoupper($s->recipient->country);
         $xml = '<?xml version="1.0" encoding="UTF-8"?><ESHIPPER><LOGIN><COMPANY>'.Api::e($this->api->username).'</COMPANY><PASSWORD>'.Api::e($this->api->password).'</PASSWORD><APPID>EC</APPID><APPVERSION>3.1</APPVERSION></LOGIN>'
             .'<CONSIGNMENTBATCH><SENDER>'.Mapping::address($s->sender).'<ACCOUNT>'.Api::e($this->api->accountNumber).'</ACCOUNT><VAT>'.Api::e((string) $s->option('sender_vat')).'</VAT>'
-            .'<COLLECTION><COLLECTIONADDRESS>'.Mapping::address($s->sender).'</COLLECTIONADDRESS><SHIPDATE>'.$date.'</SHIPDATE><PREFCOLLECTTIME><FROM>10:00</FROM><TO>16:00</TO></PREFCOLLECTTIME></COLLECTION></SENDER>'
+            .'<COLLECTION><COLLECTIONADDRESS>'.Mapping::address($this->collection ?? $s->sender).'</COLLECTIONADDRESS><SHIPDATE>'.$date.'</SHIPDATE><PREFCOLLECTTIME><FROM>10:00</FROM><TO>16:00</TO></PREFCOLLECTTIME></COLLECTION></SENDER>'
             .'<CONSIGNMENT><CONREF>'.Api::e(mb_substr((string) ($s->reference ?? 'omnibus'), 0, 24)).'</CONREF><DETAILS><RECEIVER>'.Mapping::address($s->recipient).'</RECEIVER>'
             .'<CUSTOMERREF>'.Api::e(mb_substr((string) $s->reference, 0, 24)).'</CUSTOMERREF><CONTYPE>'.($s->option('documents') ? 'D' : 'N').'</CONTYPE><PAYMENTIND>S</PAYMENTIND><ITEMS>'.\count($s->parcels).'</ITEMS><TOTALWEIGHT>'.number_format(max(0.1, $s->weight() / 1000), 2, '.', '').'</TOTALWEIGHT><TOTALVOLUME>'.number_format(array_sum(array_map(static fn ($p) => ($p->length ?? 0) * ($p->width ?? 0) * ($p->height ?? 0) / 1e6, $s->parcels)), 3, '.', '').'</TOTALVOLUME>'
             .'<CURRENCY>'.Api::e($s->parcels[0]->currency).'</CURRENCY><GOODSVALUE>'.number_format(array_sum(array_map(static fn ($p) => $p->value ?? 0, $s->parcels)) / 100, 2, '.', '').'</GOODSVALUE><INSURANCEVALUE>0</INSURANCEVALUE><INSURANCECURRENCY>EUR</INSURANCECURRENCY>'
