@@ -121,16 +121,14 @@ booking still succeeds. `trackingUrl` is
 `pickupPoint` is not sent.
 
 **Track.** A `TrackRequest` 3.1 with the complete level of detail, locale `fr_FR` when the
-request's locale starts with `fr`, else `en_GB`, market type `INTERNATIONAL` and origin country
-`FR` whatever the consignment. The events of the first consignment are read from
+request's locale starts with `fr`, else `en_GB`, and the consignment number alone: neither market
+type nor origin country, the optional filters a tracking number cannot tell. The events of the
+first consignment are read from
 `LocalEventDate` and `LocalEventTime` (`20261002` `1130`, in PHP's default time zone: TNT gives
 local times without an offset), with TNT's status code as `code` and the depot (else its name) as
 `location`, sorted oldest first. The status is the latest event's, or `DELIVERED` when the
 consignment's `SummaryCode` is `DEL`. An event's status is read from its code, else from words of
 its description, in this order:
-
-> [!WARNING]
-> Known defect: tracking always sends origin country `FR` and market type `INTERNATIONAL`, where they should follow the parcel.
 
 | Code | Or the description contains | `TrackingStatus` |
 |---|---|---|
@@ -226,8 +224,8 @@ conformance suite on recorded answers. The example above was run in the core's h
 recorded answers.
 
 Not verified: the README says the package is built from TNT's published ExpressConnect
-documentation and was not yet run against the service. Tracking always asks with origin country
-`FR`, which is unchecked for consignments leaving another country.
+documentation and was not yet run against the service. Tracking by the consignment number alone,
+without market type and origin country, is unchecked against a real answer.
 
 ## Responsibility
 

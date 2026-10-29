@@ -62,6 +62,10 @@ final class TntGatewayTest extends TestCase
         self::assertSame(TrackingStatus::DELIVERED, $tracking->status);
         self::assertSame('Shipment Collected From Sender.', $tracking->events[0]->description);
         self::assertStringContainsString('locale="en_GB"', $this->calls[0][1]);
+        // ExpressConnect Tracking 3.1: marketType and originCountry are optional filters of SearchCriteria; a number alone does not tell them.
+        self::assertStringContainsString('<SearchCriteria><ConsignmentNumber>', $this->calls[0][1]);
+        self::assertStringNotContainsString('originCountry', $this->calls[0][1]);
+        self::assertStringNotContainsString('marketType', $this->calls[0][1]);
         self::assertFalse($gateway->supports(Pickup::class));
         self::assertFalse($gateway->supports(Cancel::class));
     }

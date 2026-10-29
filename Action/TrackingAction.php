@@ -32,7 +32,9 @@ final class TrackingAction implements ActionInterface, ApiAwareInterface
     public function execute(Request $request): void
     {
         \assert($request instanceof Tracking);
-        $data = $this->api->call(Api::TRACKING, 'xml_in', '<?xml version="1.0" encoding="UTF-8"?><TrackRequest locale="'.(str_starts_with($request->locale, 'fr') ? 'fr_FR' : 'en_GB').'" version="3.1"><SearchCriteria marketType="INTERNATIONAL" originCountry="'.strtoupper((string) ($request->trackingNumber ? 'FR' : 'FR')).'"><ConsignmentNumber>'.Api::e($request->trackingNumber).'</ConsignmentNumber></SearchCriteria><LevelOfDetail><Complete originAddress="true" destinationAddress="true"/></LevelOfDetail></TrackRequest>');
+        // By the consignment number alone: marketType and originCountry are optional filters, and
+        // a tracking number does not say where the parcel left from nor whether it stays at home.
+        $data = $this->api->call(Api::TRACKING, 'xml_in', '<?xml version="1.0" encoding="UTF-8"?><TrackRequest locale="'.(str_starts_with($request->locale, 'fr') ? 'fr_FR' : 'en_GB').'" version="3.1"><SearchCriteria><ConsignmentNumber>'.Api::e($request->trackingNumber).'</ConsignmentNumber></SearchCriteria><LevelOfDetail><Complete originAddress="true" destinationAddress="true"/></LevelOfDetail></TrackRequest>');
         $consignment = $data->Consignment[0] ?? null;
         $events = [];
         foreach ($consignment->StatusData ?? [] as $status) {
