@@ -200,6 +200,10 @@ omnibus:
                 account_number: '%env(TNT_ACCOUNT)%'
 ```
 
+## Usage policy
+
+`policy.json` (named in `composer.json`'s `extra.omnisense.policy`) leaves the limits unknown; TNT's ExpressConnect guide recommends 3 creates a call. ExpressConnect is being retired with the TNT brand: its page answered 404 on 2026-11-10, and omnibus/fedex replaces it. A consignment is sent once; TNT refuses a consignment number sent twice. When TNT's wait holds the result fetch after a consignment was sent, the `CarrierException` names the access code: do not book again. A 429 is a `RateLimitedException`, never retried, and the carrier's next calls wait for its `Retry-After`, unsent. See omnisense/omnibus' [Usage policies and rate limits](https://github.com/glitchr-omnisense/omnibus/blob/2.x/docs/policies.md).
+
 ## Errors
 
 Every failure is an `Omnibus\Exception\CarrierException` whose `carrier` is `tnt`:

@@ -6,6 +6,7 @@ use Omnibus\Action\ActionInterface;
 use Omnibus\Action\ApiAwareInterface;
 use Omnibus\Action\ApiAwareTrait;
 use Omnibus\Exception\CarrierException;
+use Omnibus\Exception\UsageLimitReachedException;
 use Omnibus\Model\Address;
 use Omnibus\Model\Label;
 use Omnibus\Request\Request;
@@ -59,7 +60,12 @@ final class ShippingAction implements ActionInterface, ApiAwareInterface
         if ('' === $access) {
             throw new CarrierException('tnt', 'TNT gave no access code for the consignment.');
         }
-        $result = $this->api->call(Api::SHIPPING, 'xml_in', 'GET_RESULT:'.$access, false);
+        try {
+            $result = $this->api->call(Api::SHIPPING, 'xml_in', 'GET_RESULT:'.$access, false);
+        } catch (UsageLimitReachedException $e) {
+            // The consignment went to TNT: never "nothing sent". Its result is read with the access code, not by booking again.
+            throw new CarrierException('tnt', \sprintf('TNT took the consignment (access code %s), its result held by TNT\'s wait: read it later, do not book again.', $access), 'result_held', $e);
+        }
         $number = (string) ($result->CREATE->CONNUMBER ?? '');
         if ('' === $number) {
             throw new CarrierException('tnt', (string) ($result->CREATE->ERROR->DESCRIPTION ?? 'TNT created no consignment.'));
@@ -68,7 +74,8 @@ final class ShippingAction implements ActionInterface, ApiAwareInterface
         try {
             $label = $this->api->call(Api::SHIPPING, 'xml_in', 'GET_LABEL:'.$access, false);
             $content = $label->asXML() ?: null; // TNT's label is an XML document rendered by its stylesheet
-        } catch (CarrierException) {
+        } catch (CarrierException|UsageLimitReachedException) {
+            // The shipment is booked: a label held by the carrier's wait is fetched later, as a failed one.
         }
         $request->setResult(new Label('tnt', $number, $content, 'application/xml', null, 'https://www.tnt.com/express/en_gb/site/shipping-tools/tracking.html?searchType=con&cons='.rawurlencode($number)));
     }

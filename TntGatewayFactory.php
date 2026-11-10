@@ -29,11 +29,12 @@ final class TntGatewayFactory extends GatewayFactory
         $config->defaults([
             'omnibus.factory_name' => 'tnt',
             'omnibus.factory_title' => 'TNT',
+            'omnibus.policy' => __DIR__.'/policy.json',
             'omnibus.required_options' => ['username', 'password', 'account_number'],
             'omnibus.api' => function (Config $c) {
                 $http = $this->http ?? HttpClient::create();
 
-                return new Api($http, (string) $c['username'], (string) $c['password'], (string) $c['account_number']);
+                return new Api($http, (string) $c['username'], (string) $c['password'], (string) $c['account_number'], backoff: $c->backoff());
             },
             'omnibus.action.rating' => static fn (Config $c) => $c->get('rates') ? null : new RatingAction(),
             'sender' => null,

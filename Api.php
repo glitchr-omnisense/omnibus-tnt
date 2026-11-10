@@ -4,6 +4,8 @@ namespace Omnibus\Tnt;
 
 use Omnibus\Exception\CarrierException;
 use Omnibus\Http\Redaction;
+use Omnibus\Http\Throttle;
+use Omnisense\Contracts\Policy\Backoff;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -25,6 +27,8 @@ final class Api
         public readonly string $password,
         public readonly string $accountNumber,
         private readonly int $timeout = 20,
+        /** The waits the carrier asks for (omnisense/contracts' Backoff): no call while one lasts, a 429 a RateLimitedException, never retried */
+        private readonly ?Backoff $backoff = null,
     ) {
     }
 
@@ -32,12 +36,14 @@ final class Api
     public function call(string $url, string $field, string $xml, bool $auth = true): \SimpleXMLElement
     {
         try {
+            Throttle::before($this->backoff);
             $response = $this->http->request('POST', $url, array_filter([
                 'auth_basic' => $auth ? [$this->username, $this->password] : null,
                 'body' => [$field => $xml],
                 'timeout' => $this->timeout,
             ]));
             $status = $response->getStatusCode();
+            Throttle::after($this->backoff, 'tnt', $status, $response->getHeaders(false));
             $content = $response->getContent(false);
         } catch (HttpExceptionInterface $e) {
             $secrets = $this->secrets();

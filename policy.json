@@ -1,0 +1,38 @@
+{
+    "$schema": "https://github.com/glitchr-omnisense/contracts/blob/1.x/resources/usage-policy.schema.json",
+    "provider": "tnt",
+    "rateLimits": null,
+    "concurrency": null,
+    "rights": {
+        "commercial": "contract",
+        "openSourceRequired": false,
+        "caching": {
+            "permission": "unknown",
+            "maxTtl": null
+        },
+        "storage": "unknown",
+        "redistribution": "forbidden",
+        "attribution": {
+            "required": false,
+            "text": null,
+            "url": null,
+            "where": []
+        },
+        "licence": null
+    },
+    "requirements": {
+        "key": true,
+        "userAgent": {
+            "required": false,
+            "pattern": null
+        }
+    },
+    "provenance": {
+        "terms": null,
+        "policy": "https://express.tnt.com/expresswebservices-website/docs/ExpressConnect Shipping Integration Guide v3.15.pdf",
+        "verifiedAt": "2026-11-10",
+        "declaredBy": "maintainer",
+        "contact": "https://www.tnt.com",
+        "notes": "ExpressConnect Shipping Integration Guide v3.15: up to 50 consignments a call, 3 creates a call recommended; the documents are TNT proprietary, a third-party developer keeps no TNT information afterwards. Being retired with the TNT brand (FedEx): express.tnt.com/expressconnect/ answered 404 on 2026-11-10 and integrators stopped TNT bookings; FedEx REST (omnibus/fedex) replaces it. CONREF must be unique; a consignment number sent again is refused as a duplicate. Nothing resent by the package."
+    }
+}
