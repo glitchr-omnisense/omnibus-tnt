@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+- A notice at the head of the README: TNT's customers are being moved to FedEx Express, with no
+  date published; the package stays maintained for existing TNT accounts, and `composer.json`
+  suggests omnibus/fedex for a new integration. The package is not marked abandoned.
+
 ### Added
 - On omnisense/contracts: the carrier's usage policy as data (`policy.json`, named in
   `composer.json`'s `extra.omnisense.policy`; docs/index.md, Usage policy), and its waits honoured:

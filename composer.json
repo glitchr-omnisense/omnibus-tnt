@@ -24,6 +24,9 @@
     "require-dev": {
         "phpunit/phpunit": "^11.0"
     },
+    "suggest": {
+        "omnibus/fedex": "FedEx's APIs, where TNT's customers are being moved: prefer it for a new integration"
+    },
     "autoload": {
         "psr-4": {
             "Omnibus\\Tnt\\": ""

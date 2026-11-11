@@ -1,5 +1,10 @@
 # omnibus/tnt
 
+> **TNT is being folded into FedEx.** TNT says all its customers move to FedEx Express, step by
+> step and with no date published ([tnt.com](https://www.tnt.com/express/en_ae/site/fedex-tnt.html),
+> read on 2026-11-11). ExpressConnect still answers for existing TNT accounts, so this package is
+> kept and maintained; for a new integration, use [omnibus/fedex](https://github.com/glitchr-omnisense/omnibus-fedex).
+
 TNT for [omnisense/omnibus](https://github.com/glitchr-omnisense/omnibus): prices (ExpressConnect
 Pricing), consignments with their labels (ExpressConnect Shipping) and tracking (ExpressConnect
 Tracking) - the XML services on express.tnt.com, still answered for existing TNT accounts. New
