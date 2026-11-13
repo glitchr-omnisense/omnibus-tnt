@@ -10,6 +10,41 @@ Pricing), consignments with their labels (ExpressConnect Shipping) and tracking 
 Tracking) - the XML services on express.tnt.com, still answered for existing TNT accounts. New
 accounts get FedEx's APIs since TNT joined FedEx: see omnibus/fedex.
 
+## Install and a first call
+
+```sh
+composer require omnibus/tnt
+```
+
+No account for this first call: TNT's answer is recorded (`Omnibus\Testing\RecordedHttpClient`
+answers in place of the API), so nothing leaves the process. With your own credentials, give the
+factory your HTTP client (or none: it makes its own) and drop the recorded one.
+
+```php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Omnibus\Testing\RecordedHttpClient;
+use Omnibus\Tnt\TntGatewayFactory;
+
+// TNT's answer, recorded: no account, and nothing leaves the process.
+$http = new RecordedHttpClient([
+    'track.do' => '<?xml version="1.0"?><TrackResponse><Consignment access="FULL"><ConsignmentNumber>GE123456789FR</ConsignmentNumber><SummaryCode>DEL</SummaryCode>'
+        .'<StatusData><StatusCode>OK</StatusCode><StatusDescription>Shipment Delivered In Good Condition.</StatusDescription><LocalEventDate>20261002</LocalEventDate>'
+        .'<LocalEventTime>1130</LocalEventTime><Depot>PAR</Depot><DepotName>Paris</DepotName></StatusData></Consignment></TrackResponse>',
+]);
+$gateway = (new TntGatewayFactory($http))->create(['username' => 'user', 'password' => 'pass', 'account_number' => '000123456']);
+
+$tracking = $gateway->track('GE123456789FR');
+echo $tracking->status->value, ' - ', $tracking->latest()?->description, "\n";   // delivered - Shipment Delivered In Good Condition.
+```
+
+A real call needs a TNT account (the credentials below). The answer is shaped after TNT's published
+documentation; the package has not been run against its service yet.
+
+## Configuration
+
 ```php
 $gateway = (new TntGatewayFactory($http))->create($options);   // $http: the application's HTTP client - none given, the factory makes its own; the options below
 ```
